@@ -1,0 +1,139 @@
+---
+title: "Problem Set 2"
+author: "Thomas O'Leary"
+date: "9/18/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. Exponential growth in cancer
+
+Imagine you are applying your ecology and evolution knowledge to better understand the development of cancer (a burgeoning new field actually^[Merlo et al., 2006. Cancer as an evolutionary and ecological process. Nature reviews cancer, 6(12), p.924.]). After metastasizing, cancer spread throughout the body, a single cancer cell reached the patient's colon. The cancer cell now divides and grows at an exponential rate. Spratt et. al (1996) found that colon cancer had an average doubling time of 109 days. Assume a lethal cancer size is on the order of $1 \text{x} 10^{12}$ (1 000 000 000 000) cells. How long will it take for the colon tumor to reach this lethal size if left untreated?
+
+**$$
+\text{Equation and Known Variables:}
+$$**
+$$
+N_{t} = N_{0}e^{rt} \\
+N_{0} = 1  \hspace{2mm} \&  \hspace{2mm}  N_{109} = 2
+2 = (1)e^{109r}
+
+$$
+$$
+N_{0} = 1  \hspace{2mm} \&  \hspace{2mm}  N_{109} = 2
+$$
+
+**$$
+\text{Plug in values and solve for r} 
+$$**
+$$
+\begin{aligned}
+2 &= (1)e^{109r} \\
+ln(2) &= ln(e^{109r}) 
+\end{aligned}
+$$
+$$
+ln(2) = ln(e^{109r}) 
+$$
+$$
+\frac{ln(2)}{109} = \frac{109r}{109}
+$$
+$$
+r = \frac{ln(2)}{109} 
+$$
+
+**$$
+\text{Plug in $r$ and solve for $t$ when $N = 1 \text{x} 10^{12}$} 
+$$**
+$$
+1 \text{x} 10^{12} = (1)e^{\frac{ln(2)}{109}t} 
+$$
+$$
+ln(1 \text{x} 10^{12}) = ln(e^{\frac{ln(2)}{109}t}) 
+$$
+$$
+ln(1 \text{x} 10^{12}) = \frac{ln(2)}{109}t*ln(e) 
+$$
+$$
+t = \frac{ln(1 \text{x} 10^{12})*109}{ln(2)} 
+$$
+$$
+t \approx 4,345 \text{ days}
+$$
+
+
+
+2. Sterile insect release 
+
+One strategy to combat problematic insect species (like malaria-carrying mosquitoes) is to release sterile males to overwhelm the population^[This approach is being used to control Aedes aegypti and Aedes albopictus mosquitoes in the hopes of preventing dengue and yellow fever]. The equation below denotes the number of females (*N*), number of males (*M*), birth rate (*b*), and death rate (*d*). There is a single equilibrium point for this equation. Determine the equilibrium point and whether or not it is stable. How does this relate to the Allee effect?
+
+$$
+\text{Equation} 
+$$
+$$
+\frac{dN}{dt} = b\frac{N}{N+M} - d 
+$$
+$$
+\text{Set change to zero}
+$$
+$$
+0 = b\frac{N}{N+M} - d 
+$$
+$$
+(N+M)d = b\frac{N}{N+M}(N+M) 
+$$
+$$
+Nd + Md = bN 
+$$
+$$
+bN - Nd = Md 
+$$
+$$
+\frac{N(b-d)}{(b-d)} = \frac{Md}{(b-d)} 
+$$
+$$
+N = \frac{Md}{b-d}
+$$
+
+
+
+
+3. Sterile insect release with competition
+
+The previous problem did not include any negative density-dependence. To test this assumption, we can include competition in our previous problem. Assuming $N = 0$ is an equilbium point (if $N = 0$, it will not change), modify the code below to estimate the two other equilbrium points and each of their stability. If the population drops below 0, assume it went extinct. You can modify both the initial state value for N or the amount of time (times object) to run the model. When you know the equilbrium points and their stability, sketch a plot of $b\frac{N}{N+M} - d - cN$ versus $N$ and show the equilibrium points as open (unstable) or closed (stable) balls.
+
+$$
+\frac{dN}{dt} = b\frac{N}{N+M} - d - cN
+$$
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE}
+require(deSolve)
+
+# Model
+sterile_insect <- function(t, state,parameters){
+  with(as.list(c(state, parameters)),{
+    dN <- b*N/(N + M) - d - c*N
+    list(c(dN))    
+  })}
+
+# Initial values
+state <- c(N = 8)
+times <- seq(0, 125, by = 1)
+
+# Parameters
+parameters <- c(b = 2.4, c = 0.02, M = 50, d = 0.2)
+
+# Loop though and make graphs with these initial population values
+init_pops <- c(8, 10, 12, 40, 50, 60)
+
+for (pop in init_pops){
+  state <- c(N = pop)
+  out <- ode(y = state,times = times, func = sterile_insect, parms = parameters)
+  par(mfrow=c(1,1))
+  plot(out[, 1], out[, 2], ylab = 'N', xlab = 'time', ylim = c(0, 80), 
+            main = paste("Initial Population N =", pop), las = 1)
+}
+```

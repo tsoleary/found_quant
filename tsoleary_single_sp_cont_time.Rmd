@@ -1,0 +1,51 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Problem set 2: Single-species models in continuous time**
+
+Thomas O'Leary
+
+---
+
+3. Sterile insect release with competition
+
+The previous problem did not include any negative density-dependence. To test this assumption, we can include competition in our previous problem. Assuming $N = 0$ is an equilbium point (if $N = 0$, it will not change), modify the code below to estimate the two other equilbrium points and each of their stability. If the population drops below 0, assume it went extinct. You can modify both the initial state value for N or the amount of time (times object) to run the model. When you know the equilbrium points and their stability, sketch a plot of $b\frac{N}{N+M} - d - cN$ versus $N$ and show the equilibrium points as open (unstable) or closed (stable) balls.
+
+$$
+\frac{dN}{dt} = b\frac{N}{N+M} - d - cN
+$$
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE}
+require(deSolve)
+
+# Model
+sterile_insect <- function(t, state,parameters){
+  with(as.list(c(state, parameters)),{
+    dN <- b*N/(N + M) - d - c*N
+    list(c(dN))    
+  })}
+
+# Initial values
+state <- c(N = 8)
+times <- seq(0, 125, by = 1)
+
+# Parameters
+parameters <- c(b = 2.4, c = 0.02, M = 50, d = 0.2)
+
+# Loop though and make graphs with these initial population values
+init_pops <- c(8, 10, 12, 40, 50, 60)
+
+for (pop in init_pops){
+  state <- c(N = pop)
+  out <- ode(y = state,times = times, func = sterile_insect, parms = parameters)
+  par(mfrow=c(1,1))
+  plot(out[, 1], out[, 2], ylab = 'N', xlab = 'time', ylim = c(0, 80), 
+            main = paste("Initial Population N =", pop), las = 1)
+}
+```
